@@ -55,7 +55,6 @@ A comprehensive web-based toolkit for testers and developers featuring 9 essenti
 
 ## 🎨 Design
 
-- **Minimalist Gen Z aesthetic**
 - Clean, spacious layouts
 - Tailwind CSS styling
 - Fully responsive (mobile, tablet, desktop)
@@ -128,3 +127,4 @@ Contributions are welcome! Feel free to submit issues or pull requests.
 ---
 
 Made with ❤️ for testers and developers
+
