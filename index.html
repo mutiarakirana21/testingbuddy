@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing Buddy - Developer Utilities</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        accent: '#06b6d4',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .tool-section {
+            display: none;
+        }
+
+        .tool-section.active {
+            display: block;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        pre {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .error-line {
+            background: #fee2e2;
+            border-left: 3px solid #ef4444;
+            padding: 4px 8px;
+            margin: 2px 0;
+        }
+
+        .error-marker {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        /* Sublime-style diff */
+        .diff-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: #e5e7eb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .diff-pane {
+            background: white;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+
+        .diff-line-wrapper {
+            display: flex;
+            min-height: 20px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .diff-line-num {
+            background: #f3f4f6;
+            color: #6b7280;
+            padding: 2px 8px;
+            min-width: 40px;
+            text-align: right;
+            border-right: 1px solid #e5e7eb;
+            user-select: none;
+        }
+
+        .diff-line-content {
+            padding: 2px 8px;
+            flex: 1;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .diff-added {
+            background: #d1fae5;
+        }
+
+        .diff-removed {
+            background: #fee2e2;
+        }
+
+        .diff-modified {
+            background: #fef3c7;
+        }
+
+        .char-added {
+            background: #86efac;
+            font-weight: 600;
+        }
+
+        .char-removed {
+            background: #fca5a5;
+            font-weight: 600;
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                    Testing Buddy
+                </h1>
+                <button onclick="toggleHistory()"
+                    class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all text-sm font-medium">
+                    📜 History
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Sidebar Navigation -->
+            <nav class="lg:w-64 flex-shrink-0">
+                <div class="bg-white rounded-xl shadow-sm p-4 sticky top-24">
+                    <h2 class="text-sm font-semibold text-gray-500 uppercase mb-3">Tools</h2>
+                    <div class="space-y-1">
+                        <button onclick="switchTool('curl')"
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100 active">
+                            🌐 Curl Generator
+                        </button>
+                        <button onclick="switchTool('json-formatter')"
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
+                            📋 JSON Formatter
+                        </button>
+                        <button onclick="switchTool('xml-formatter')"
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
+                            📄 XML Formatter
+                        </button>
+                        <button onclick="switchTool('converter')"
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
+                            🔄 JSON ↔ XML
+                        </button>
+                        <button onclick="switchTool('compare')"
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
+                            🔍 Text Compare
+                        </button>
+                        <button onclick="switchTool('base64')"
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
+                            🔐 Base64 Tool
+                        </button>
+                        <button onclick="switchTool('timestamp')"
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
+                            ⏰ Timestamp Converter
+                        </button>
+                        <button onclick="switchTool('ocp')"
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
+                            ⚙️ OCP Command Gen
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="flex-1 min-w-0">
+                <!-- Curl Generator -->
+                <div id="curl" class="tool-section active">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-2xl font-bold mb-6">Curl Generator</h2>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">URL</label>
+                                <input type="text" id="curl-url" placeholder="https://api.example.com/endpoint"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Method</label>
+                                    <select id="curl-method"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <option>GET</option>
+                                        <option>POST</option>
+                                        <option>PUT</option>
+                                        <option>DELETE</option>
+                                        <option>PATCH</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Resolve</label>
+                                    <input type="text" id="curl-resolve" placeholder="example.com:443:127.0.0.1"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Query Parameters</label>
+                                <div id="curl-query-params" class="space-y-2">
+                                    <div class="flex gap-2">
+                                        <input type="text" placeholder="Parameter name"
+                                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent query-name">
+                                        <input type="text" placeholder="Parameter value"
+                                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent query-value">
+                                        <button onclick="this.parentElement.remove(); generateCurl()"
+                                            class="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-all">✕</button>
+                                    </div>
+                                </div>
+                                <button onclick="addQueryParam()"
+                                    class="mt-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all text-sm font-medium">+
+                                    Add Query Param</button>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Headers</label>
+                                <div id="curl-headers" class="space-y-2">
+                                    <div class="flex gap-2">
+                                        <input type="text" placeholder="Header name"
+                                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent header-name">
+                                        <input type="text" placeholder="Header value"
+                                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent header-value">
+                                        <button onclick="this.parentElement.remove(); generateCurl()"
+                                            class="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-all">✕</button>
+                                    </div>
+                                </div>
+                                <button onclick="addHeader()"
+                                    class="mt-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all text-sm font-medium">+
+                                    Add Header</button>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Request Body
+                                    (JSON/Text)</label>
+                                <textarea id="curl-body" rows="4" placeholder='{"key": "value"}'
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Flags</label>
+                                <div class="flex flex-wrap gap-4">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="flag-v" onchange="generateCurl()"
+                                            class="w-4 h-4 text-primary rounded focus:ring-primary">
+                                        <span class="text-sm">-v (verbose)</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="flag-i" onchange="generateCurl()"
+                                            class="w-4 h-4 text-primary rounded focus:ring-primary">
+                                        <span class="text-sm">-i (include headers)</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="flag-k" onchange="generateCurl()"
+                                            class="w-4 h-4 text-primary rounded focus:ring-primary">
+                                        <span class="text-sm">-k (insecure)</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button onclick="generateCurl()"
+                                class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-medium hover:shadow-lg transition-all">
+                                Generate Curl
+                            </button>
+
+                            <div id="curl-output" class="hidden">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-sm font-medium text-gray-700">Generated Command (One
+                                        Line)</label>
+                                    <button onclick="copyToClipboard('curl-result', 'Curl command')"
+                                        class="copy-btn px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium transition-all hover:bg-opacity-90">
+                                        📋 Copy
+                                    </button>
+                                </div>
+                                <pre id="curl-result" class="text-sm whitespace-pre-wrap break-all"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- JSON Formatter -->
+                <div id="json-formatter" class="tool-section">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-2xl font-bold mb-4">JSON Formatter</h2>
+
+                        <!-- Buttons at top -->
+                        <div class="flex flex-wrap gap-3 mb-4">
+                            <button onclick="formatJSON('prettify')"
+                                class="px-6 py-2.5 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-medium hover:shadow-lg transition-all">
+                                ✨ Prettify
+                            </button>
+                            <button onclick="formatJSON('minify')"
+                                class="px-6 py-2.5 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-800 transition-all">
+                                🗜️ Minify
+                            </button>
+                            <select id="json-indent"
+                                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                                <option value="2">2 spaces</option>
+                                <option value="4">4 spaces</option>
+                            </select>
+                            <button onclick="copyToClipboard('json-result', 'JSON')"
+                                class="copy-btn ml-auto px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-medium transition-all hover:bg-opacity-90">
+                                📋 Copy Output
+                            </button>
+                        </div>
+
+                        <div id="json-error"
+                            class="hidden mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                        </div>
+
+                        <!-- Side by side layout -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Input</label>
+                                <textarea id="json-input" rows="20" placeholder='{"key": "value", "array": [1, 2, 3]}'
+                                    class="w-full h-[520px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm resize-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Output</label>
+                                <pre id="json-result" class="h-[520px] overflow-auto text-sm"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- XML Formatter -->
+                <div id="xml-formatter" class="tool-section">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-2xl font-bold mb-4">XML Formatter</h2>
+
+                        <!-- Buttons at top -->
+                        <div class="flex flex-wrap gap-3 mb-4">
+                            <button onclick="formatXML('prettify')"
+                                class="px-6 py-2.5 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-medium hover:shadow-lg transition-all">
+                                ✨ Prettify
+                            </button>
+                            <button onclick="formatXML('minify')"
+                                class="px-6 py-2.5 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-800 transition-all">
+                                🗜️ Minify
+                            </button>
+                            <button onclick="copyToClipboard('xml-result', 'XML')"
+                                class="copy-btn ml-auto px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-medium transition-all hover:bg-opacity-90">
+                                📋 Copy Output
+                            </button>
+                        </div>
+
+                        <div id="xml-error"
+                            class="hidden mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                        </div>
+
+                        <!-- Side by side layout -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Input</label>
+                                <textarea id="xml-input" rows="20" placeholder='<root><item>value</item></root>'
+                                    class="w-full h-[520px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm resize-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Output</label>
+                                <pre id="xml-result" class="h-[520px] overflow-auto text-sm"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- JSON ↔ XML Converter -->
+                <div id="converter" class="tool-section">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-2xl font-bold mb-6">JSON ↔ XML Converter</h2>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Input Format</label>
+                                <div class="flex gap-2 mb-3">
+                                    <button onclick="setConverterMode('json')" id="conv-json-btn"
+                                        class="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium transition-all">
+                                        JSON → XML
+                                    </button>
+                                    <button onclick="setConverterMode('xml')" id="conv-xml-btn"
+                                        class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium transition-all">
+                                        XML → JSON
+                                    </button>
+                                </div>
+                                <textarea id="converter-input" rows="8" placeholder='Enter JSON or XML...'
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm"></textarea>
+                            </div>
+
+                            <button onclick="convertFormat()"
+                                class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-medium hover:shadow-lg transition-all">
+                                🔄 Convert
+                            </button>
+
+                            <div id="converter-error"
+                                class="hidden p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                            </div>
+
+                            <div id="converter-output" class="hidden">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-sm font-medium text-gray-700">Converted Output</label>
+                                    <button onclick="copyToClipboard('converter-result', 'Converted data')"
+                                        class="copy-btn px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium transition-all hover:bg-opacity-90">
+                                        📋 Copy
+                                    </button>
+                                </div>
+                                <pre id="converter-result" class="text-sm max-h-96 overflow-auto"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Text Compare (Sublime Style) -->
+                <div id="compare" class="tool-section">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-2xl font-bold mb-6">Text Compare</h2>
+
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Original Text</label>
+                                    <textarea id="compare-text1" rows="10" placeholder="Enter original text..."
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Modified Text</label>
+                                    <textarea id="compare-text2" rows="10" placeholder="Enter modified text..."
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-4">
+                                <button onclick="compareTexts()"
+                                    class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-medium hover:shadow-lg transition-all">
+                                    🔍 Compare
+                                </button>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="ignore-whitespace"
+                                        class="w-4 h-4 text-primary rounded focus:ring-primary">
+                                    <span class="text-sm">Ignore whitespace</span>
+                                </label>
+                            </div>
+
+                            <div id="compare-output" class="hidden">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-sm font-medium text-gray-700">Side-by-Side Comparison</label>
+                                </div>
+                                <div id="compare-result"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Base64 Tool -->
+                <div id="base64" class="tool-section">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-2xl font-bold mb-6">Base64 Encoder/Decoder</h2>
+
+                        <div class="space-y-4">
+                            <div class="flex gap-2 mb-3">
+                                <button onclick="setBase64Mode('encode')" id="base64-encode-btn"
+                                    class="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium transition-all">
+                                    Encode
+                                </button>
+                                <button onclick="setBase64Mode('decode')" id="base64-decode-btn"
+                                    class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium transition-all">
+                                    Decode
+                                </button>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Input</label>
+                                <textarea id="base64-input" rows="6"
+                                    placeholder="Enter text to encode or base64 to decode..."
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm"
+                                    oninput="processBase64()"></textarea>
+                            </div>
+
+                            <div id="base64-error"
+                                class="hidden p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                            </div>
+
+                            <div id="base64-output" class="hidden">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-sm font-medium text-gray-700">Output</label>
+                                    <button onclick="copyToClipboard('base64-result', 'Base64 result')"
+                                        class="copy-btn px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium transition-all hover:bg-opacity-90">
+                                        📋 Copy
+                                    </button>
+                                </div>
+                                <pre id="base64-result" class="text-sm max-h-96 overflow-auto"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timestamp Converter -->
+                <div id="timestamp" class="tool-section">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-2xl font-bold mb-6">Unix Timestamp Converter</h2>
+
+                        <div class="space-y-6">
+                            <div class="p-4 bg-gradient-to-r from-primary to-secondary rounded-lg text-white">
+                                <div class="text-sm opacity-90 mb-1">Current Timestamp</div>
+                                <div id="current-timestamp" class="text-3xl font-bold"></div>
+                                <div id="current-datetime" class="text-sm opacity-90 mt-1"></div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Timestamp to
+                                        Date</label>
+                                    <input type="text" id="ts-to-date-input" placeholder="1234567890"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent mb-2"
+                                        oninput="convertTimestamp()">
+                                    <div class="flex gap-2 mb-2">
+                                        <button
+                                            onclick="document.getElementById('ts-to-date-input').value = Math.floor(Date.now()/1000); convertTimestamp()"
+                                            class="text-sm px-3 py-1 bg-gray-100 rounded hover:bg-gray-200">Seconds</button>
+                                        <button
+                                            onclick="document.getElementById('ts-to-date-input').value = Date.now(); convertTimestamp()"
+                                            class="text-sm px-3 py-1 bg-gray-100 rounded hover:bg-gray-200">Milliseconds</button>
+                                    </div>
+                                    <div id="ts-output" class="space-y-2"></div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Date to
+                                        Timestamp</label>
+                                    <input type="datetime-local" id="date-to-ts-input"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent mb-2"
+                                        oninput="convertDate()">
+                                    <div id="date-output" class="space-y-2"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Timezone</label>
+                                <select id="timezone" onchange="convertTimestamp(); convertDate()"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                                    <option value="UTC">UTC</option>
+                                    <option value="America/New_York">EST (New York)</option>
+                                    <option value="America/Los_Angeles">PST (Los Angeles)</option>
+                                    <option value="Europe/London">GMT (London)</option>
+                                    <option value="Asia/Tokyo">JST (Tokyo)</option>
+                                    <option value="Asia/Jakarta" selected>WIB (Jakarta, GMT+7)</option>
+                                    <option value="Australia/Sydney">AEDT (Sydney)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OCP Command Generator -->
+                <div id="ocp" class="tool-section">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-2xl font-bold mb-6">OCP Environment Variable Search</h2>
+
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Search by Variable
+                                        Name</label>
+                                    <input type="text" id="ocp-search-name" placeholder="e.g., REDIS_HOSTS"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <p class="text-xs text-gray-500 mt-1">Leave empty to skip name search</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Search by Variable
+                                        Value</label>
+                                    <input type="text" id="ocp-search-value" placeholder="e.g., xyz"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <p class="text-xs text-gray-500 mt-1">Leave empty to skip value search</p>
+                                </div>
+                            </div>
+
+                            <button onclick="generateOCPCommand()"
+                                class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-medium hover:shadow-lg transition-all">
+                                ⚙️ Generate Command
+                            </button>
+
+                            <div id="ocp-output" class="hidden">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-sm font-medium text-gray-700">Generated Command (One
+                                        Line)</label>
+                                    <button onclick="copyToClipboard('ocp-result', 'OCP command')"
+                                        class="copy-btn px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium transition-all hover:bg-opacity-90">
+                                        📋 Copy
+                                    </button>
+                                </div>
+                                <pre id="ocp-result" class="text-sm whitespace-pre-wrap break-all"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="history-modal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-xl font-bold">History</h3>
+                <div class="flex gap-2">
+                    <button onclick="clearHistory()"
+                        class="px-3 py-1.5 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition-all">
+                        Clear All
+                    </button>
+                    <button onclick="toggleHistory()"
+                        class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-all">
+                        Close
+                    </button>
+                </div>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+                <div class="mb-4">
+                    <input type="text" id="history-search" placeholder="Search history..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                        oninput="filterHistory()">
+                </div>
+                <div id="history-list" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
