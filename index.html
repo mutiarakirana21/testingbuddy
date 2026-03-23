@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Testing Buddy - Developer Utilities</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%236366f1'/><stop offset='100%25' stop-color='%238b5cf6'/></linearGradient></defs><rect width='100' height='100' rx='20' fill='url(%23g)'/><g transform='translate(20,20) scale(2.5)' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z'/></g></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -252,71 +253,481 @@
         .jd-tag-chip .jd-tag-scope { color: #6b7280; font-weight: 400; }
         .jd-tag-chip.jd-tag-scoped { border-color: #bfdbfe; background: #eff6ff; color: #1d4ed8; }
         .jd-tag-chip.jd-tag-scoped .jd-tag-scope { color: #60a5fa; }
+
+        /* ── Collapsible Sidebar ── */
+        .sidebar-nav {
+            transition: width 0.2s ease;
+            width: 16rem;
+            flex-shrink: 0;
+        }
+        .sidebar-nav.collapsed { width: 52px; }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .sidebar-toggle:hover { color: #6366f1; background: #f3f4f6; }
+        .sidebar-toggle svg { width: 16px; height: 16px; }
+        .sidebar-nav.collapsed .sidebar-header { justify-content: center; }
+        .sidebar-nav.collapsed .sidebar-title-text { display: none; }
+        .sidebar-nav.collapsed .sidebar-card { padding: 6px; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+        .nav-item .nav-icon {
+            flex-shrink: 0;
+            width: 24px;
+            text-align: center;
+            font-size: 16px;
+            line-height: 1;
+        }
+        .nav-item .nav-label {
+            transition: opacity 0.2s, margin 0.2s;
+            margin-left: 4px;
+        }
+        .sidebar-nav.collapsed .nav-item {
+            padding: 8px 0;
+            justify-content: center;
+        }
+        .sidebar-nav.collapsed .nav-item .nav-label {
+            opacity: 0;
+            width: 0;
+            margin-left: 0;
+            overflow: hidden;
+            position: absolute;
+        }
+        /* Tooltip on hover when collapsed */
+        .sidebar-nav.collapsed .nav-item { position: relative; }
+        .sidebar-nav.collapsed .nav-item:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: calc(100% + 8px);
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            white-space: nowrap;
+            z-index: 200;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            pointer-events: none;
+        }
+
+        /* ── JSON Diff Enhanced (matching json-diff-tool) ── */
+        .jd-section {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+        }
+        .jd-header {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        .jd-header-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .jd-header-actions { display: flex; gap: 8px; align-items: center; }
+        .jd-btn {
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 7px 16px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .jd-btn:hover { background: #f3f4f6; border-color: #d1d5db; }
+        .jd-btn-primary { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-color: transparent; color: #fff; }
+        .jd-btn-primary:hover { opacity: 0.9; box-shadow: 0 2px 8px rgba(99,102,241,0.3); }
+        .jd-btn-danger { color: #ef4444; }
+        .jd-btn-danger:hover { background: #fef2f2; border-color: #fecaca; }
+        .jd-options-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+            padding: 10px 20px;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.82rem;
+        }
+        .jd-option-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #6b7280;
+            cursor: pointer;
+            user-select: none;
+        }
+        .jd-input-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .jd-input-pane { display: flex; flex-direction: column; }
+        .jd-input-pane:first-child { border-right: 1px solid #e5e7eb; }
+        .jd-input-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b7280;
+            padding: 8px 16px;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .jd-input-label .jd-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .jd-input-pane:first-child .jd-dot { background: #ef4444; }
+        .jd-input-pane:last-child .jd-dot { background: #10b981; }
+        .jd-textarea {
+            width: 100%;
+            min-height: 200px;
+            border: none !important;
+            padding: 12px 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+            background: #fafbfc !important;
+            color: #1f2937 !important;
+        }
+        .jd-textarea::placeholder { color: #9ca3af !important; }
+        .jd-textarea:focus { background: #f4f5f7 !important; }
+        .jd-diff-output { padding: 0; }
+        .jd-empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+            text-align: center;
+            gap: 8px;
+        }
+        .jd-empty-state p { font-size: 0.9rem; max-width: 400px; line-height: 1.6; }
+        .jd-diff-file-header {
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 8px 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.78rem;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .jd-diff-stats { display: flex; gap: 14px; font-size: 0.75rem; font-weight: 600; }
+        .jd-stat-add { color: #10b981; }
+        .jd-stat-del { color: #ef4444; }
+        .jd-stat-mod { color: #d97706; }
+
+        /* ── Dark mode ── */
+        [data-theme="dark"] body,
+        [data-theme="dark"] {
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+        [data-theme="dark"] header.header-bar {
+            background: #161b22 !important;
+            border-color: #30363d !important;
+            box-shadow: none !important;
+        }
+        [data-theme="dark"] .header-bar h1 {
+            background: none !important;
+            -webkit-text-fill-color: #f0f6fc;
+            color: #f0f6fc;
+        }
+        [data-theme="dark"] .sidebar-card,
+        [data-theme="dark"] .bg-white {
+            background: #161b22 !important;
+            border-color: #30363d !important;
+        }
+        [data-theme="dark"] .shadow-sm { box-shadow: none !important; }
+        [data-theme="dark"] .shadow-2xl { box-shadow: 0 4px 24px rgba(0,0,0,0.5) !important; }
+        [data-theme="dark"] .bg-gray-50 { background: #161b22 !important; }
+        [data-theme="dark"] .bg-gray-100 { background: #1c2128 !important; }
+        [data-theme="dark"] .bg-gray-200 { background: #161b22 !important; border-color: #30363d !important; }
+        [data-theme="dark"] .bg-gray-700 { background: #1c2128 !important; }
+        [data-theme="dark"] .hover\:bg-gray-200:hover { background: #1c2128 !important; }
+        [data-theme="dark"] .hover\:bg-gray-800:hover { background: #161b22 !important; }
+        [data-theme="dark"] .text-gray-500 { color: #8b949e !important; }
+        [data-theme="dark"] .text-gray-400 { color: #8b949e !important; }
+        [data-theme="dark"] .text-gray-600 { color: #c9d1d9 !important; }
+        [data-theme="dark"] .text-gray-700 { color: #c9d1d9 !important; }
+        [data-theme="dark"] .border-gray-200 { border-color: #30363d !important; }
+        [data-theme="dark"] .border-gray-300 { border-color: #30363d !important; }
+        [data-theme="dark"] .text-red-600 { color: #f85149 !important; }
+        [data-theme="dark"] .text-green-600 { color: #3fb950 !important; }
+        [data-theme="dark"] .text-yellow-600 { color: #e3b341 !important; }
+        [data-theme="dark"] .bg-red-50 { background: #2d1215 !important; }
+        [data-theme="dark"] .bg-red-100 { background: #2d1215 !important; }
+        [data-theme="dark"] .hover\:bg-red-200:hover { background: #3d1215 !important; }
+        [data-theme="dark"] .border-red-200 { border-color: #da3633 !important; }
+        [data-theme="dark"] .text-red-700 { color: #f85149 !important; }
+        [data-theme="dark"] .text-sm { color: inherit; }
+        [data-theme="dark"] input,
+        [data-theme="dark"] select,
+        [data-theme="dark"] textarea {
+            background: #0d1117 !important;
+            color: #c9d1d9 !important;
+            border-color: #30363d !important;
+        }
+        [data-theme="dark"] input::placeholder,
+        [data-theme="dark"] textarea::placeholder {
+            color: #484f58 !important;
+        }
+        [data-theme="dark"] select option {
+            background: #161b22;
+            color: #c9d1d9;
+        }
+        [data-theme="dark"] input[type="checkbox"] {
+            accent-color: #58a6ff;
+        }
+        [data-theme="dark"] pre {
+            background: #0d1117;
+            border-color: #30363d;
+            color: #c9d1d9;
+        }
+        [data-theme="dark"] .nav-item {
+            color: #c9d1d9;
+        }
+        [data-theme="dark"] .nav-item:hover {
+            background: #1c2128;
+        }
+        [data-theme="dark"] .nav-item.active {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+        [data-theme="dark"] .toast {
+            background: #161b22;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+        }
+        [data-theme="dark"] .bg-black { background: rgba(0,0,0,0.7) !important; }
+        [data-theme="dark"] .sidebar-toggle { color: #8b949e; }
+        [data-theme="dark"] .sidebar-toggle:hover { color: #58a6ff; background: #1c2128; }
+        [data-theme="dark"] .sidebar-nav.collapsed .nav-item:hover::after {
+            background: #161b22;
+            border-color: #30363d;
+            color: #c9d1d9;
+        }
+        [data-theme="dark"] .text-xs.text-gray-500 { color: #8b949e !important; }
+        [data-theme="dark"] h2 { color: #f0f6fc; }
+        [data-theme="dark"] h3 { color: #f0f6fc; }
+        [data-theme="dark"] label { color: #c9d1d9; }
+        [data-theme="dark"] span { color: inherit; }
+        [data-theme="dark"] .border-dashed { border-color: #30363d !important; }
+
+        /* Dark mode diff overrides */
+        [data-theme="dark"] .diff-container { background: #30363d; border-color: #30363d; }
+        [data-theme="dark"] .diff-pane { background: #0d1117; }
+        [data-theme="dark"] .diff-line-num { background: #1c2128; color: #484f58; border-color: #30363d; }
+        [data-theme="dark"] .diff-added { background: #12261e; }
+        [data-theme="dark"] .diff-removed { background: #2d1215; }
+        [data-theme="dark"] .diff-modified { background: #272115; }
+        [data-theme="dark"] .char-added { background: rgba(63,185,80,0.3); color: #3fb950; }
+        [data-theme="dark"] .char-removed { background: rgba(248,81,73,0.3); color: #f85149; }
+
+        /* Dark mode JSON diff overrides */
+        [data-theme="dark"] .jd-diff-table tr.jd-row-equal td { background: #0d1117; }
+        [data-theme="dark"] .jd-diff-table tr.jd-row-del td { background: #2d1215; }
+        [data-theme="dark"] .jd-diff-table tr.jd-row-del .jd-ln { background: #2a1215; }
+        [data-theme="dark"] .jd-diff-table tr.jd-row-del .jd-gutter { color: #f85149; }
+        [data-theme="dark"] .jd-diff-table tr.jd-row-add td { background: #12261e; }
+        [data-theme="dark"] .jd-diff-table tr.jd-row-add .jd-ln { background: #0f2318; }
+        [data-theme="dark"] .jd-diff-table tr.jd-row-add .jd-gutter { color: #3fb950; }
+        [data-theme="dark"] .jd-diff-table tr.jd-row-mod-left td { background: #2d1215; }
+        [data-theme="dark"] .jd-diff-table tr.jd-row-mod-left .jd-ln { background: #2a1215; }
+        [data-theme="dark"] .jd-diff-table tr.jd-row-mod-left .jd-gutter { color: #f85149; }
+        [data-theme="dark"] .jd-diff-table tr.jd-row-mod-right td { background: #12261e; }
+        [data-theme="dark"] .jd-diff-table tr.jd-row-mod-right .jd-ln { background: #0f2318; }
+        [data-theme="dark"] .jd-diff-table tr.jd-row-mod-right .jd-gutter { color: #3fb950; }
+        [data-theme="dark"] .jd-diff-table .jd-ln { background: #1c2128; color: #484f58; border-color: #30363d; }
+        [data-theme="dark"] .jd-diff-table .jd-sep { background: #30363d; }
+        [data-theme="dark"] .jd-hl-del { background: rgba(248,81,73,0.2); color: #f85149; }
+        [data-theme="dark"] .jd-hl-add { background: rgba(63,185,80,0.2); color: #3fb950; }
+        [data-theme="dark"] .jd-collapse-row td { background: #1c2128; color: #8b949e; border-color: #30363d; }
+        [data-theme="dark"] .jd-collapse-row:hover td { background: #161b22; color: #58a6ff; }
+        [data-theme="dark"] .jd-tag-chip { background: #1e293b; border-color: #30363d; color: #e3b341; }
+        [data-theme="dark"] .jd-tag-chip .jd-tag-remove { color: #8b949e; }
+        [data-theme="dark"] .jd-tag-chip .jd-tag-remove:hover { color: #f85149; }
+        [data-theme="dark"] .jd-tag-chip .jd-tag-scope { color: #8b949e; }
+        [data-theme="dark"] .jd-tag-chip.jd-tag-scoped { border-color: #1e3a5f; background: #111c2e; color: #58a6ff; }
+        [data-theme="dark"] .jd-tag-chip.jd-tag-scoped .jd-tag-scope { color: #4a7fad; }
+
+        /* Dark mode gradient buttons keep working */
+        [data-theme="dark"] .bg-gradient-to-r { opacity: 0.95; }
+
+        /* Dark mode: JSON diff enhanced section */
+        [data-theme="dark"] .jd-section { background: #161b22; border-color: #30363d; }
+        [data-theme="dark"] .jd-header { background: #1c2128; border-color: #30363d; }
+        [data-theme="dark"] .jd-header-title { color: #f0f6fc; }
+        [data-theme="dark"] .jd-btn { background: #161b22; border-color: #30363d; color: #c9d1d9; }
+        [data-theme="dark"] .jd-btn:hover { background: #1c2128; border-color: #484f58; }
+        [data-theme="dark"] .jd-btn-primary { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-color: transparent; color: #fff; }
+        [data-theme="dark"] .jd-btn-danger { color: #f85149; }
+        [data-theme="dark"] .jd-btn-danger:hover { background: #2d1215; border-color: #da3633; }
+        [data-theme="dark"] .jd-options-bar { background: #1c2128; border-color: #30363d; }
+        [data-theme="dark"] .jd-option-label { color: #8b949e; }
+        [data-theme="dark"] .jd-input-container { border-color: #30363d; }
+        [data-theme="dark"] .jd-input-pane:first-child { border-color: #30363d; }
+        [data-theme="dark"] .jd-input-label { background: #1c2128; border-color: #30363d; color: #8b949e; }
+        [data-theme="dark"] .jd-textarea { background: #0d1117; color: #c9d1d9; }
+        [data-theme="dark"] .jd-textarea::placeholder { color: #484f58; }
+        [data-theme="dark"] .jd-textarea:focus { background: #0b0f14; }
+        [data-theme="dark"] .jd-empty-state { color: #484f58; }
+        [data-theme="dark"] .jd-diff-file-header { background: #1c2128; border-color: #30363d; color: #8b949e; }
+        [data-theme="dark"] .jd-stat-add { color: #3fb950; }
+        [data-theme="dark"] .jd-stat-del { color: #f85149; }
+        [data-theme="dark"] .jd-stat-mod { color: #e3b341; }
+
+        /* Dark mode: sidebar tooltip */
+        [data-theme="dark"] .sidebar-nav.collapsed .nav-item:hover::after {
+            background: #161b22;
+            border-color: #30363d;
+            color: #c9d1d9;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar-nav, .sidebar-nav.collapsed { width: 100% !important; }
+            .sidebar-card { position: static !important; }
+            .sidebar-nav.collapsed .nav-item .nav-label { opacity: 1 !important; width: auto !important; position: static !important; margin-left: 4px !important; }
+            .sidebar-nav.collapsed .nav-item { padding: 8px 16px !important; justify-content: flex-start !important; }
+            .sidebar-nav.collapsed .sidebar-title-text { display: block !important; }
+            .sidebar-nav.collapsed .sidebar-card { padding: 1rem !important; }
+            .sidebar-nav.collapsed .sidebar-header { justify-content: space-between !important; }
+            .sidebar-nav.collapsed .nav-item:hover::after { display: none !important; }
+            .jd-input-container { grid-template-columns: 1fr; }
+            .jd-input-pane:first-child { border-right: none; border-bottom: 1px solid #e5e7eb; }
+        }
     </style>
 </head>
 
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <header class="header-bar bg-white shadow-sm sticky top-0 z-50">
+        <div class="px-4 sm:px-6 lg:px-8 py-4">
             <div class="flex items-center justify-between">
                 <h1 class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                     Testing Buddy
                 </h1>
-                <button onclick="toggleHistory()"
-                    class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all text-sm font-medium">
-                    📜 History
-                </button>
+                <div class="flex gap-2 items-center">
+                    <button onclick="toggleTheme()"
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all text-sm font-medium"
+                        title="Toggle dark mode" id="theme-toggle-btn">
+                        🌙 Dark
+                    </button>
+                    <button onclick="toggleHistory()"
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all text-sm font-medium">
+                        📜 History
+                    </button>
+                </div>
             </div>
         </div>
     </header>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="px-4 sm:px-6 lg:px-8 py-8">
         <div class="flex flex-col lg:flex-row gap-6">
             <!-- Sidebar Navigation -->
-            <nav class="lg:w-64 flex-shrink-0">
-                <div class="bg-white rounded-xl shadow-sm p-4 sticky top-24">
-                    <h2 class="text-sm font-semibold text-gray-500 uppercase mb-3">Tools</h2>
+            <nav class="sidebar-nav" id="sidebar">
+                <div class="sidebar-card bg-white rounded-xl shadow-sm p-4 sticky top-24">
+                    <div class="sidebar-header mb-3">
+                        <h2 class="sidebar-title-text text-sm font-semibold text-gray-500 uppercase">Tools</h2>
+                        <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar" id="sidebar-toggle-btn">
+                            <svg id="sidebar-icon-collapse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><polyline points="14 9 11 12 14 15"/></svg>
+                            <svg id="sidebar-icon-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><polyline points="13 9 16 12 13 15"/></svg>
+                        </button>
+                    </div>
                     <div class="space-y-1">
                         <button onclick="switchTool('curl', this)"
-                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100 active">
-                            🌐 Curl Generator
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100 active"
+                            data-tooltip="Curl Generator">
+                            <span class="nav-icon">🌐</span> <span class="nav-label">Curl Generator</span>
                         </button>
                         <button onclick="switchTool('json-formatter', this)"
-                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
-                            📋 JSON Formatter
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100"
+                            data-tooltip="JSON Formatter">
+                            <span class="nav-icon">📋</span> <span class="nav-label">JSON Formatter</span>
                         </button>
                         <button onclick="switchTool('xml-formatter', this)"
-                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
-                            📄 XML Formatter
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100"
+                            data-tooltip="XML Formatter">
+                            <span class="nav-icon">📄</span> <span class="nav-label">XML Formatter</span>
                         </button>
                         <button onclick="switchTool('converter', this)"
-                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
-                            🔄 JSON ↔ XML
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100"
+                            data-tooltip="JSON ↔ XML">
+                            <span class="nav-icon">🔄</span> <span class="nav-label">JSON ↔ XML</span>
                         </button>
                         <button onclick="switchTool('compare', this)"
-                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
-                            🔍 Text Compare
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100"
+                            data-tooltip="Text Compare">
+                            <span class="nav-icon">🔍</span> <span class="nav-label">Text Compare</span>
                         </button>
                         <button onclick="switchTool('base64', this)"
-                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
-                            🔐 Base64 Tool
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100"
+                            data-tooltip="Base64 Tool">
+                            <span class="nav-icon">🔐</span> <span class="nav-label">Base64 Tool</span>
                         </button>
                         <button onclick="switchTool('timestamp', this)"
-                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
-                            ⏰ Timestamp Converter
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100"
+                            data-tooltip="Timestamp Converter">
+                            <span class="nav-icon">⏰</span> <span class="nav-label">Timestamp Converter</span>
                         </button>
                         <button onclick="switchTool('ocp', this)"
-                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
-                            ⚙️ OCP Command Gen
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100"
+                            data-tooltip="OCP Command Gen">
+                            <span class="nav-icon">⚙️</span> <span class="nav-label">OCP Command Gen</span>
                         </button>
                         <button onclick="switchTool('json-diff', this)"
-                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
-                            🔀 JSON Diff
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100"
+                            data-tooltip="JSON Diff">
+                            <span class="nav-icon">🔀</span> <span class="nav-label">JSON Diff</span>
                         </button>
                         <button onclick="switchTool('url-codec', this)"
-                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
-                            🔗 URL Encoder/Decoder
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100"
+                            data-tooltip="URL Encoder/Decoder">
+                            <span class="nav-icon">🔗</span> <span class="nav-label">URL Encoder/Decoder</span>
                         </button>
                     </div>
                 </div>
@@ -765,71 +1176,65 @@
                         </div>
                     </div>
                 </div>
+
                 <!-- JSON Diff -->
                 <div id="json-diff" class="tool-section">
-                    <div class="bg-white rounded-xl shadow-sm p-6">
-                        <h2 class="text-2xl font-bold mb-4">JSON Diff</h2>
-
-                        <!-- Options -->
-                        <div class="flex flex-wrap gap-4 mb-4 p-3 bg-gray-50 rounded-lg text-sm">
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" id="jd-opt-sort" checked
-                                    class="w-4 h-4 text-primary rounded focus:ring-primary">
-                                <span>Sort arrays before comparing</span>
-                            </label>
-                            <label class="flex items-center gap-2">
-                                <span>Sort key:</span>
-                                <input type="text" id="jd-opt-sort-key" placeholder="e.g. allowance_subtype"
-                                    class="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-xs w-40">
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" id="jd-opt-collapse" checked
-                                    class="w-4 h-4 text-primary rounded focus:ring-primary">
-                                <span>Collapse unchanged</span>
-                            </label>
-                        </div>
-                        <div class="flex flex-wrap items-start gap-2 mb-4 p-3 bg-gray-50 rounded-lg text-sm">
-                            <span class="text-gray-500 mt-1">Ignore keys:</span>
-                            <div class="flex items-center gap-2 flex-wrap" id="jd-ignore-keys-wrap">
-                                <input type="text" id="jd-ignore-keys-input" placeholder="parent.key or key + Enter"
-                                    class="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-xs w-48">
+                    <div class="jd-section">
+                        <!-- Header bar -->
+                        <div class="jd-header">
+                            <div class="jd-header-title">🔀 JSON Diff</div>
+                            <div class="jd-header-actions">
+                                <button class="jd-btn" onclick="jdLoadSample()">📄 Sample</button>
+                                <button class="jd-btn jd-btn-danger" onclick="jdClear()">✕ Clear</button>
+                                <button class="jd-btn jd-btn-primary" onclick="jdCompare()">🔀 Compare</button>
                             </div>
-                            <span class="text-xs text-gray-400 w-full mt-1">Scoped: <code class="bg-gray-200 px-1 rounded text-xs">added_offers.service_type</code> &middot; Global: <code class="bg-gray-200 px-1 rounded text-xs">technician_appointment</code></span>
                         </div>
 
-                        <!-- Buttons -->
-                        <div class="flex flex-wrap gap-3 mb-4">
-                            <button onclick="jdCompare()"
-                                class="px-6 py-2.5 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-medium hover:shadow-lg transition-all">
-                                🔀 Compare
-                            </button>
-                            <button onclick="jdLoadSample()"
-                                class="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-all">
-                                📄 Sample
-                            </button>
-                            <button onclick="jdClear()"
-                                class="px-4 py-2.5 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition-all">
-                                ✕ Clear
-                            </button>
+                        <!-- Options bar -->
+                        <div class="jd-options-bar">
+                            <label class="jd-option-label">
+                                <input type="checkbox" id="jd-opt-sort" checked>
+                                Sort arrays before comparing
+                            </label>
+                            <label class="jd-option-label">
+                                Sort key:
+                                <input type="text" id="jd-opt-sort-key" placeholder="e.g. allowance_subtype"
+                                    style="width:150px; padding:3px 8px; border:1px solid #d1d5db; border-radius:4px; font-family:'Courier New',monospace; font-size:12px;">
+                            </label>
+                            <label class="jd-option-label">
+                                <input type="checkbox" id="jd-opt-collapse" checked>
+                                Collapse unchanged
+                            </label>
+                        </div>
+                        <div class="jd-options-bar" style="border-top:none; padding-top:0;">
+                            <label class="jd-option-label" style="align-items:flex-start; gap:8px;">
+                                Ignore keys:
+                                <div class="flex items-center gap-2 flex-wrap" id="jd-ignore-keys-wrap">
+                                    <input type="text" id="jd-ignore-keys-input" placeholder="parent.key or key + Enter"
+                                        style="width:160px; padding:3px 8px; border:1px solid #d1d5db; border-radius:4px; font-family:'Courier New',monospace; font-size:12px;">
+                                </div>
+                                <span style="display:block; width:100%; font-size:11px; color:#9ca3af; margin-top:4px; line-height:1.5;">
+                                    Scope with dot path: <code style="background:#f3f4f6; padding:1px 5px; border-radius:3px; font-size:11px;">added_offers.service_type</code>
+                                    &middot; Bare key = global: <code style="background:#f3f4f6; padding:1px 5px; border-radius:3px; font-size:11px;">technician_appointment</code>
+                                </span>
+                            </label>
                         </div>
 
                         <!-- Side by side inputs -->
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Payload 1 (left / old)</label>
-                                <textarea id="jd-input1" rows="10" placeholder="Paste JSON payload 1 here..."
-                                    class="w-full h-[240px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm resize-none"></textarea>
+                        <div class="jd-input-container" id="jd-input-area">
+                            <div class="jd-input-pane">
+                                <div class="jd-input-label"><span class="jd-dot"></span> Payload 1 (left / old)</div>
+                                <textarea id="jd-input1" class="jd-textarea" placeholder="Paste JSON payload 1 here..."></textarea>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Payload 2 (right / new)</label>
-                                <textarea id="jd-input2" rows="10" placeholder="Paste JSON payload 2 here..."
-                                    class="w-full h-[240px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm resize-none"></textarea>
+                            <div class="jd-input-pane">
+                                <div class="jd-input-label"><span class="jd-dot"></span> Payload 2 (right / new)</div>
+                                <textarea id="jd-input2" class="jd-textarea" placeholder="Paste JSON payload 2 here..."></textarea>
                             </div>
                         </div>
 
                         <!-- Diff output -->
-                        <div id="jd-output">
-                            <div class="text-center text-gray-400 py-12">
+                        <div id="jd-output" class="jd-diff-output">
+                            <div class="jd-empty-state">
                                 <p>Paste two JSON payloads above and click <strong>Compare</strong> to see a side-by-side diff.</p>
                             </div>
                         </div>
@@ -911,6 +1316,47 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+        // ── Theme Toggle ──
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                localStorage.setItem('tb-theme', 'light');
+                document.getElementById('theme-toggle-btn').textContent = '🌙 Dark';
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                localStorage.setItem('tb-theme', 'dark');
+                document.getElementById('theme-toggle-btn').textContent = '☀️ Light';
+            }
+        }
+
+        // ── Sidebar Toggle ──
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const isCollapsed = sidebar.classList.toggle('collapsed');
+            localStorage.setItem('tb-sidebar', isCollapsed ? 'collapsed' : 'expanded');
+            document.getElementById('sidebar-icon-collapse').style.display = isCollapsed ? 'none' : 'block';
+            document.getElementById('sidebar-icon-expand').style.display = isCollapsed ? 'block' : 'none';
+        }
+
+        // Load saved preferences
+        (function () {
+            const savedTheme = localStorage.getItem('tb-theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.getElementById('theme-toggle-btn').textContent = '☀️ Light';
+            }
+
+            const savedSidebar = localStorage.getItem('tb-sidebar');
+            if (savedSidebar === 'collapsed') {
+                document.getElementById('sidebar').classList.add('collapsed');
+                document.getElementById('sidebar-icon-collapse').style.display = 'none';
+                document.getElementById('sidebar-icon-expand').style.display = 'block';
+            }
+        })();
+    </script>
 </body>
 
 </html>
