@@ -153,6 +153,105 @@
             font-weight: 600;
             text-decoration: line-through;
         }
+
+        /* JSON Diff styles */
+        .jd-diff-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            table-layout: fixed;
+        }
+
+        .jd-diff-table td {
+            padding: 1px 10px;
+            vertical-align: top;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .jd-diff-table .jd-ln {
+            width: 40px;
+            min-width: 40px;
+            color: #9ca3af;
+            text-align: right;
+            padding-right: 8px;
+            user-select: none;
+            font-size: 12px;
+            border-right: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+
+        .jd-diff-table .jd-gutter {
+            width: 22px;
+            min-width: 22px;
+            text-align: center;
+            font-weight: 700;
+            user-select: none;
+            padding: 1px 4px;
+        }
+
+        .jd-diff-table .jd-sep {
+            width: 1px;
+            min-width: 1px;
+            padding: 0;
+            background: #e5e7eb;
+        }
+
+        .jd-diff-table tr.jd-row-equal td { background: white; }
+        .jd-diff-table tr.jd-row-del td { background: #fee2e2; }
+        .jd-diff-table tr.jd-row-del .jd-ln { background: #fecaca; }
+        .jd-diff-table tr.jd-row-del .jd-gutter { color: #ef4444; }
+        .jd-diff-table tr.jd-row-add td { background: #d1fae5; }
+        .jd-diff-table tr.jd-row-add .jd-ln { background: #a7f3d0; }
+        .jd-diff-table tr.jd-row-add .jd-gutter { color: #10b981; }
+        .jd-diff-table tr.jd-row-mod-left td { background: #fee2e2; }
+        .jd-diff-table tr.jd-row-mod-left .jd-ln { background: #fecaca; }
+        .jd-diff-table tr.jd-row-mod-left .jd-gutter { color: #ef4444; }
+        .jd-diff-table tr.jd-row-mod-right td { background: #d1fae5; }
+        .jd-diff-table tr.jd-row-mod-right .jd-ln { background: #a7f3d0; }
+        .jd-diff-table tr.jd-row-mod-right .jd-gutter { color: #10b981; }
+
+        .jd-hl-del { background: #fca5a5; color: #991b1b; border-radius: 3px; padding: 0 2px; }
+        .jd-hl-add { background: #6ee7b7; color: #065f46; border-radius: 3px; padding: 0 2px; }
+
+        .jd-collapse-row td {
+            background: #f3f4f6;
+            color: #6b7280;
+            text-align: center;
+            padding: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            border-top: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .jd-collapse-row:hover td { background: #e5e7eb; color: #6366f1; }
+
+        .jd-tag-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            color: #92400e;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        .jd-tag-chip .jd-tag-remove {
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 14px;
+            margin-left: 2px;
+        }
+        .jd-tag-chip .jd-tag-remove:hover { color: #ef4444; }
+        .jd-tag-chip .jd-tag-scope { color: #6b7280; font-weight: 400; }
+        .jd-tag-chip.jd-tag-scoped { border-color: #bfdbfe; background: #eff6ff; color: #1d4ed8; }
+        .jd-tag-chip.jd-tag-scoped .jd-tag-scope { color: #60a5fa; }
     </style>
 </head>
 
@@ -179,37 +278,45 @@
                 <div class="bg-white rounded-xl shadow-sm p-4 sticky top-24">
                     <h2 class="text-sm font-semibold text-gray-500 uppercase mb-3">Tools</h2>
                     <div class="space-y-1">
-                        <button onclick="switchTool('curl')"
+                        <button onclick="switchTool('curl', this)"
                             class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100 active">
                             🌐 Curl Generator
                         </button>
-                        <button onclick="switchTool('json-formatter')"
+                        <button onclick="switchTool('json-formatter', this)"
                             class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
                             📋 JSON Formatter
                         </button>
-                        <button onclick="switchTool('xml-formatter')"
+                        <button onclick="switchTool('xml-formatter', this)"
                             class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
                             📄 XML Formatter
                         </button>
-                        <button onclick="switchTool('converter')"
+                        <button onclick="switchTool('converter', this)"
                             class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
                             🔄 JSON ↔ XML
                         </button>
-                        <button onclick="switchTool('compare')"
+                        <button onclick="switchTool('compare', this)"
                             class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
                             🔍 Text Compare
                         </button>
-                        <button onclick="switchTool('base64')"
+                        <button onclick="switchTool('base64', this)"
                             class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
                             🔐 Base64 Tool
                         </button>
-                        <button onclick="switchTool('timestamp')"
+                        <button onclick="switchTool('timestamp', this)"
                             class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
                             ⏰ Timestamp Converter
                         </button>
-                        <button onclick="switchTool('ocp')"
+                        <button onclick="switchTool('ocp', this)"
                             class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
                             ⚙️ OCP Command Gen
+                        </button>
+                        <button onclick="switchTool('json-diff', this)"
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
+                            🔀 JSON Diff
+                        </button>
+                        <button onclick="switchTool('url-codec', this)"
+                            class="nav-item w-full text-left px-4 py-2.5 rounded-lg transition-all text-sm font-medium hover:bg-gray-100">
+                            🔗 URL Encoder/Decoder
                         </button>
                     </div>
                 </div>
@@ -221,6 +328,19 @@
                 <div id="curl" class="tool-section active">
                     <div class="bg-white rounded-xl shadow-sm p-6">
                         <h2 class="text-2xl font-bold mb-6">Curl Generator</h2>
+
+                        <!-- Import Curl -->
+                        <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Import Existing Curl Command</label>
+                            <div class="flex gap-2">
+                                <textarea id="curl-import-input" rows="2" placeholder='Paste an existing curl command here to import...'
+                                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm resize-none"></textarea>
+                                <button onclick="importCurl()"
+                                    class="px-4 py-2 bg-accent text-white rounded-lg font-medium hover:bg-opacity-90 transition-all self-end">
+                                    📥 Import
+                                </button>
+                            </div>
+                        </div>
 
                         <div class="space-y-4">
                             <div>
@@ -645,6 +765,119 @@
                         </div>
                     </div>
                 </div>
+                <!-- JSON Diff -->
+                <div id="json-diff" class="tool-section">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-2xl font-bold mb-4">JSON Diff</h2>
+
+                        <!-- Options -->
+                        <div class="flex flex-wrap gap-4 mb-4 p-3 bg-gray-50 rounded-lg text-sm">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="jd-opt-sort" checked
+                                    class="w-4 h-4 text-primary rounded focus:ring-primary">
+                                <span>Sort arrays before comparing</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <span>Sort key:</span>
+                                <input type="text" id="jd-opt-sort-key" placeholder="e.g. allowance_subtype"
+                                    class="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-xs w-40">
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="jd-opt-collapse" checked
+                                    class="w-4 h-4 text-primary rounded focus:ring-primary">
+                                <span>Collapse unchanged</span>
+                            </label>
+                        </div>
+                        <div class="flex flex-wrap items-start gap-2 mb-4 p-3 bg-gray-50 rounded-lg text-sm">
+                            <span class="text-gray-500 mt-1">Ignore keys:</span>
+                            <div class="flex items-center gap-2 flex-wrap" id="jd-ignore-keys-wrap">
+                                <input type="text" id="jd-ignore-keys-input" placeholder="parent.key or key + Enter"
+                                    class="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-xs w-48">
+                            </div>
+                            <span class="text-xs text-gray-400 w-full mt-1">Scoped: <code class="bg-gray-200 px-1 rounded text-xs">added_offers.service_type</code> &middot; Global: <code class="bg-gray-200 px-1 rounded text-xs">technician_appointment</code></span>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="flex flex-wrap gap-3 mb-4">
+                            <button onclick="jdCompare()"
+                                class="px-6 py-2.5 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-medium hover:shadow-lg transition-all">
+                                🔀 Compare
+                            </button>
+                            <button onclick="jdLoadSample()"
+                                class="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-all">
+                                📄 Sample
+                            </button>
+                            <button onclick="jdClear()"
+                                class="px-4 py-2.5 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition-all">
+                                ✕ Clear
+                            </button>
+                        </div>
+
+                        <!-- Side by side inputs -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Payload 1 (left / old)</label>
+                                <textarea id="jd-input1" rows="10" placeholder="Paste JSON payload 1 here..."
+                                    class="w-full h-[240px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm resize-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Payload 2 (right / new)</label>
+                                <textarea id="jd-input2" rows="10" placeholder="Paste JSON payload 2 here..."
+                                    class="w-full h-[240px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm resize-none"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Diff output -->
+                        <div id="jd-output">
+                            <div class="text-center text-gray-400 py-12">
+                                <p>Paste two JSON payloads above and click <strong>Compare</strong> to see a side-by-side diff.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- URL Encoder/Decoder -->
+                <div id="url-codec" class="tool-section">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-2xl font-bold mb-4">URL Encoder/Decoder</h2>
+
+                        <div class="flex gap-2 mb-4">
+                            <button onclick="setUrlCodecMode('decode')" id="url-decode-btn"
+                                class="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium transition-all">
+                                Decode URL
+                            </button>
+                            <button onclick="setUrlCodecMode('encode')" id="url-encode-btn"
+                                class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium transition-all">
+                                Encode URL
+                            </button>
+                        </div>
+
+                        <div id="url-codec-error"
+                            class="hidden mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Input</label>
+                                <textarea id="url-codec-input" rows="12"
+                                    placeholder="Paste URL-encoded string here, e.g. hello%20world%2Fpath%3Fkey%3Dvalue"
+                                    class="w-full h-[400px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm resize-none"
+                                    oninput="processUrlCodec()"></textarea>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-sm font-medium text-gray-700">Output</label>
+                                    <button onclick="copyToClipboard('url-codec-result', 'Result')"
+                                        class="copy-btn px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium transition-all hover:bg-opacity-90">
+                                        📋 Copy
+                                    </button>
+                                </div>
+                                <pre id="url-codec-result" class="h-[400px] overflow-auto text-sm"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </main>
         </div>
     </div>
